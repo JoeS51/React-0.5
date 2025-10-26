@@ -1,3 +1,4 @@
+// React implementationnnnnnnn
 let React = {
   createElement: (tags, props, ...children) => {
     if (typeof tags == "function") {
@@ -10,21 +11,7 @@ let React = {
   }
 };
 
-
-const App = () => {
-  return (
-    <div className="joe-test">
-      <h1>TITLE</h1>
-      <p>
-        hello
-      </p>
-    </div>
-  );
-}
-
 const render = (reactElement, container) => {
-  console.log(reactElement)
-  console.log(container)
   if (typeof reactElement == "string") {
     const textElement = document.createTextNode(reactElement);
     container.appendChild(textElement);
@@ -41,11 +28,45 @@ const render = (reactElement, container) => {
 
   if (reactElement.children) {
     console.log("REACT CHILDREN")
-    console.log(reactElement.props)
+    console.log(reactElement.children)
     reactElement.children.forEach(child => render(child
       , actualDomElement));
   }
   container.appendChild(actualDomElement);
+}
+
+let globalTitle = "";
+
+const rerender = () => {
+  document.querySelector("#root").firstChild.remove();
+  render(<App />, document.querySelector("#root"));
+}
+
+const useState = (initialState) => {
+  if (globalTitle == "") {
+    globalTitle = initialState
+  }
+  let setState = (newState) => {
+    console.log("set state called with ", newState)
+    globalTitle = newState
+    rerender();
+  }
+  return [globalTitle, setState]
+}
+
+// HTML
+const App = () => {
+  const [title, setTitle] = useState("TITLE");
+
+  return (
+    <div className="joe-test">
+      <input onchange={e => setTitle(e.target.value)} value={title} />
+      <h1>{title}</h1>
+      <p>
+        hello
+      </p>
+    </div>
+  );
 }
 
 render(<App />, document.querySelector("#root"));
