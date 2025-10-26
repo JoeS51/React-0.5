@@ -32,12 +32,16 @@ const render = (reactElement, container) => {
   }
   const actualDomElement = document.createElement(reactElement.tags)
   if (reactElement.props) {
+    console.log("REACT ELEMENT PROPS")
+    console.log(reactElement.props)
     Object.keys(reactElement.props)
       .filter(p => p != "children")
-      .forEach(p => (actualDomElement[p] = reactElement[p]));
+      .forEach(p => (actualDomElement[p] = reactElement.props[p]));
   }
 
   if (reactElement.children) {
+    console.log("REACT CHILDREN")
+    console.log(reactElement.props)
     reactElement.children.forEach(child => render(child
       , actualDomElement));
   }
