@@ -12,7 +12,7 @@ let React = {
 };
 
 const render = (reactElement, container) => {
-  if (typeof reactElement == "string") {
+  if (typeof reactElement == "string" || typeof reactElement == "number") {
     const textElement = document.createTextNode(reactElement);
     container.appendChild(textElement);
     return;
@@ -35,32 +35,42 @@ const render = (reactElement, container) => {
   container.appendChild(actualDomElement);
 }
 
-let globalTitle = "";
+const states = [];
+let idx = 0;
 
 const rerender = () => {
+  idx = 0;
   document.querySelector("#root").firstChild.remove();
   render(<App />, document.querySelector("#root"));
 }
 
 const useState = (initialState) => {
-  if (globalTitle == "") {
-    globalTitle = initialState
+  const frozen = idx;
+  if (frozen >= states.length) {
+    states.push(initialState)
   }
+
   let setState = (newState) => {
     console.log("set state called with ", newState)
-    globalTitle = newState
+    states[frozen] = newState;
     rerender();
   }
-  return [globalTitle, setState]
+  idx++;
+  return [states[frozen], setState]
 }
 
 // HTML
 const App = () => {
   const [title, setTitle] = useState("TITLE");
+  const [counter, setCounter] = useState(0);
 
   return (
     <div className="joe-test">
       <input onchange={e => setTitle(e.target.value)} value={title} />
+      <br />
+      <button onclick={() => setCounter(counter + 1)}>Click me</button>
+      <br />
+      {counter}
       <h1>{title}</h1>
       <p>
         hello
