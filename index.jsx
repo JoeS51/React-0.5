@@ -1,9 +1,17 @@
-// React implementationnnnnnnn
+// My implementation of react 
+
+// Virtual dom node
 let React = {
   createElement: (tags, props, ...children) => {
     if (typeof tags == "function") {
       // console.log("here")
-      return tags(props)
+      console.log("is a function component")
+      if (!props) props = {}
+      props.children = children
+      const res = { ...(props || {}), children }
+      console.log(props)
+      console.log(res)
+      return tags(res)
     }
     const element = { tags, props, children }
     // console.log(element);
@@ -11,7 +19,12 @@ let React = {
   }
 };
 
+// Mounting function. Takes virtual DOM and builds the actual DOM 
 const render = (reactElement, container) => {
+  if (typeof reactElement.tags == "function") {
+    console.log(reactElement)
+    console.log("JHDLKASJDLKAJDKL:SA")
+  }
   if (typeof reactElement == "string" || typeof reactElement == "number") {
     const textElement = document.createTextNode(reactElement);
     container.appendChild(textElement);
@@ -32,12 +45,19 @@ const render = (reactElement, container) => {
     reactElement.children.forEach(child => render(child
       , actualDomElement));
   }
+  if (reactElement?.props?.children) {
+    reactElement.props.children.forEach(child => render(child
+      , actualDomElement));
+  }
   container.appendChild(actualDomElement);
 }
 
+// Global States
 const states = [];
 let idx = 0;
 
+// Naive rerender implementation 
+// TODO: Improve this 
 const rerender = () => {
   idx = 0;
   document.querySelector("#root").firstChild.remove();
@@ -59,22 +79,34 @@ const useState = (initialState) => {
   return [states[frozen], setState]
 }
 
+const Test = (props) => {
+  console.log("IN TEST")
+  console.log(props)
+  return (
+    <div>
+      <p>hi</p>
+      {props.children}
+    </div>
+  )
+}
+
 // HTML
 const App = () => {
-  const [title, setTitle] = useState("TITLE");
+  const [title, setTitle] = useState("WELCOME TO MY REACT LITE");
   const [counter, setCounter] = useState(0);
 
   return (
     <div className="joe-test">
+      <Test><p>joe test</p></Test>
+      <h1>{title}</h1>
+      <p>
+        I made this with my own react implementation
+      </p>
       <input onchange={e => setTitle(e.target.value)} value={title} />
       <br />
       <button onclick={() => setCounter(counter + 1)}>Click me</button>
       <br />
       {counter}
-      <h1>{title}</h1>
-      <p>
-        hello
-      </p>
     </div>
   );
 }
