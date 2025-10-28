@@ -6,10 +6,7 @@ let React = {
     if (typeof tags == "function") {
       // console.log("here")
       console.log("is a function component")
-      if (!props) props = {}
-      props.children = children
       const res = { ...(props || {}), children }
-      console.log(props)
       console.log(res)
       return tags(res)
     }
@@ -21,10 +18,14 @@ let React = {
 
 // Mounting function. Takes virtual DOM and builds the actual DOM 
 const render = (reactElement, container) => {
-  if (typeof reactElement.tags == "function") {
-    console.log(reactElement)
-    console.log("JHDLKASJDLKAJDKL:SA")
+  console.log("in render")
+  console.log(reactElement)
+
+  if (Array.isArray(reactElement)) {
+    reactElement.forEach(node => render(node, container))
+    return
   }
+
   if (typeof reactElement == "string" || typeof reactElement == "number") {
     const textElement = document.createTextNode(reactElement);
     container.appendChild(textElement);
@@ -43,10 +44,6 @@ const render = (reactElement, container) => {
     console.log("REACT CHILDREN")
     console.log(reactElement.children)
     reactElement.children.forEach(child => render(child
-      , actualDomElement));
-  }
-  if (reactElement?.props?.children) {
-    reactElement.props.children.forEach(child => render(child
       , actualDomElement));
   }
   container.appendChild(actualDomElement);
@@ -97,7 +94,10 @@ const App = () => {
 
   return (
     <div className="joe-test">
-      <Test><p>joe test</p></Test>
+      <Test>
+        <p>joe test</p>
+        <p>joe 2 test</p>
+      </Test>
       <h1>{title}</h1>
       <p>
         I made this with my own react implementation
