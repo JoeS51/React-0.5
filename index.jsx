@@ -62,6 +62,7 @@ const rerender = () => {
 }
 
 const useState = (initialState) => {
+  console.log("in usestate")
   const frozen = idx;
   if (frozen >= states.length) {
     states.push(initialState)
@@ -74,6 +75,10 @@ const useState = (initialState) => {
   }
   idx++;
   return [states[frozen], setState]
+}
+
+const useEffect = (userFunc) => {
+  userFunc();
 }
 
 const Test = (props) => {
@@ -91,6 +96,12 @@ const Test = (props) => {
 const App = () => {
   const [title, setTitle] = useState("WELCOME TO MY REACT LITE");
   const [counter, setCounter] = useState(0);
+
+  // just runs once at the start for now
+  useEffect(() => {
+    console.log("in use effect");
+    //setCounter() this isnt working yet
+  })
 
   return (
     <div className="joe-test">
