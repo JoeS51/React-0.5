@@ -52,11 +52,18 @@ const render = (reactElement, container) => {
 // Global States
 const states = [];
 let idx = 0;
+const effects = [];
+const effectMeta = [];
+let effectIdx = 0;
+// const effects = [];
+// let effectIdx = 0;
+// const pendingEffects = [];
 
 // Naive rerender implementation 
 // TODO: Improve this 
 const rerender = () => {
   idx = 0;
+  effectIdx = 0;
   document.querySelector("#root").firstChild.remove();
   render(<App />, document.querySelector("#root"));
 }
@@ -78,7 +85,20 @@ const useState = (initialState) => {
 }
 
 const useEffect = (userFunc) => {
-  userFunc();
+  if (effectIdx >= effects.length) {
+    effects.push(userFunc);
+    effectMeta.push(false);
+  }
+  effectIdx++;
+}
+
+const executeEffect = () => {
+  for (let i = 0; i < effects.length; i++) {
+    if (!effectMeta[i]) {
+      effects[i]();
+      effectMeta[i] = true;
+    }
+  }
 }
 
 const Test = (props) => {
@@ -100,7 +120,12 @@ const App = () => {
   // just runs once at the start for now
   useEffect(() => {
     console.log("in use effect");
-    //setCounter() this isnt working yet
+    setCounter(10000);
+  })
+
+  useEffect(() => {
+    console.log("test")
+    setTitle("TEKLJSDKLAJKLDAS")
   })
 
   return (
@@ -123,3 +148,4 @@ const App = () => {
 }
 
 render(<App />, document.querySelector("#root"));
+executeEffect();
