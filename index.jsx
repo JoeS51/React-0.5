@@ -79,24 +79,31 @@ const useState = (initialState) => {
     console.log("set state called with ", newState)
     states[frozen] = newState;
     rerender();
+    executeEffect(frozen)
   }
   idx++;
   return [states[frozen], setState]
 }
 
-const useEffect = (userFunc) => {
+const useEffect = (userFunc, deps) => {
+  console.log("IN USE EFFECTY FUNC")
   if (effectIdx >= effects.length) {
     effects.push(userFunc);
-    effectMeta.push(false);
+    effectMeta.push(deps);
+    console.log("DepS")
+    console.log(deps)
   }
   effectIdx++;
 }
 
-const executeEffect = () => {
+const executeEffect = (changed) => {
   for (let i = 0; i < effects.length; i++) {
-    if (!effectMeta[i]) {
+    console.log("IN EXECUTE EFFECT")
+    console.log(effectMeta[i])
+    console.log(changed)
+    if ((effectMeta[i].length == 0 && changed == null) || effectMeta[i].includes(changed)) {
+      console.log("excut3e func")
       effects[i]();
-      effectMeta[i] = true;
     }
   }
 }
@@ -121,12 +128,12 @@ const App = () => {
   useEffect(() => {
     console.log("in use effect");
     setCounter(10000);
-  })
+  }, [])
 
   useEffect(() => {
     console.log("test")
     setTitle("TEKLJSDKLAJKLDAS")
-  })
+  }, [])
 
   return (
     <div className="joe-test">
@@ -148,4 +155,4 @@ const App = () => {
 }
 
 render(<App />, document.querySelector("#root"));
-executeEffect();
+executeEffect(null);
