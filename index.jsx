@@ -4,22 +4,16 @@
 let React = {
   createElement: (tags, props, ...children) => {
     if (typeof tags == "function") {
-      // console.log("here")
-      console.log("is a function component")
       const res = { ...(props || {}), children }
-      console.log(res)
       return tags(res)
     }
     const element = { tags, props, children }
-    // console.log(element);
     return element;
   }
 };
 
 // Mounting function. Takes virtual DOM and builds the actual DOM 
 const render = (reactElement, container) => {
-  console.log("in render")
-  console.log(reactElement)
 
   if (Array.isArray(reactElement)) {
     reactElement.forEach(node => render(node, container))
@@ -33,16 +27,12 @@ const render = (reactElement, container) => {
   }
   const actualDomElement = document.createElement(reactElement.tags)
   if (reactElement.props) {
-    console.log("REACT ELEMENT PROPS")
-    console.log(reactElement.props)
     Object.keys(reactElement.props)
       .filter(p => p != "children")
       .forEach(p => (actualDomElement[p] = reactElement.props[p]));
   }
 
   if (reactElement.children) {
-    console.log("REACT CHILDREN")
-    console.log(reactElement.children)
     reactElement.children.forEach(child => render(child
       , actualDomElement));
   }
@@ -53,11 +43,11 @@ const render = (reactElement, container) => {
 const states = [];
 let idx = 0;
 const effects = [];
-const effectMeta = [];
+const effectDeps = [];
 let effectIdx = 0;
 // const effects = [];
 // let effectIdx = 0;
-// const pendingEffects = [];
+const pendingEffects = [];
 
 // Naive rerender implementation 
 // TODO: Improve this 
@@ -69,14 +59,12 @@ const rerender = () => {
 }
 
 const useState = (initialState) => {
-  console.log("in usestate")
   const frozen = idx;
   if (frozen >= states.length) {
     states.push(initialState)
   }
 
   let setState = (newState) => {
-    console.log("set state called with ", newState)
     states[frozen] = newState;
     rerender();
     executeEffect(frozen)
@@ -86,31 +74,47 @@ const useState = (initialState) => {
 }
 
 const useEffect = (userFunc, deps) => {
-  console.log("IN USE EFFECTY FUNC")
-  if (effectIdx >= effects.length) {
-    effects.push(userFunc);
-    effectMeta.push(deps);
-    console.log("DepS")
-    console.log(deps)
+  const currIdx = effectIdx;
+  const prevDeps = effectDeps[currIdx];
+
+  let addToPending = false;
+
+  if (prevDeps === undefined) {
+    addToPending = true;
+  } else if (!deps) { // no dep array means run every render
+    addToPending = true;
+  } else {
+    if (prevDeps.length !== deps.length) {
+      addToPending = true;
+    } else {
+      for (let i = 0; i < deps.length; i++) {
+        if (prevDeps[i] !== deps[i]) {
+          addToPending = true;
+          break;
+        }
+      }
+    }
   }
+
+  if (addToPending) {
+    pendingEffects.push(userFunc);
+  }
+
+  effects[currIdx] = userFunc;
+  effectDeps[currIdx] = deps;
+
   effectIdx++;
 }
 
-const executeEffect = (changed) => {
-  for (let i = 0; i < effects.length; i++) {
-    console.log("IN EXECUTE EFFECT")
-    console.log(effectMeta[i])
-    console.log(changed)
-    if ((effectMeta[i].length == 0 && changed == null) || effectMeta[i].includes(changed)) {
-      console.log("excut3e func")
-      effects[i]();
-    }
+const executeEffect = () => {
+  const effectsToRun = pendingEffects.slice();
+  pendingEffects.length = 0;
+  for (const fn of effectsToRun) {
+    fn()
   }
 }
 
 const Test = (props) => {
-  console.log("IN TEST")
-  console.log(props)
   return (
     <div>
       <p>hi</p>
@@ -133,7 +137,7 @@ const App = () => {
   useEffect(() => {
     console.log("test")
     setTitle("TEKLJSDKLAJKLDAS")
-  }, [])
+  }, [counter])
 
   return (
     <div className="joe-test">

@@ -1,5 +1,7 @@
-## React clone 
-Building a react clone to understand it better and learn something new
+## Building React.js from Scratch
+This is a functional React clone that I built from the bottom up. 
+
+[Here is a link for more info]()
 
 ### Steps:
 - Start server
