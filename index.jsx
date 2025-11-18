@@ -56,6 +56,7 @@ const rerender = () => {
   effectIdx = 0;
   document.querySelector("#root").firstChild.remove();
   render(<App />, document.querySelector("#root"));
+  executeEffect();
 }
 
 const useState = (initialState) => {
@@ -67,7 +68,6 @@ const useState = (initialState) => {
   let setState = (newState) => {
     states[frozen] = newState;
     rerender();
-    executeEffect(frozen)
   }
   idx++;
   return [states[frozen], setState]
@@ -159,4 +159,4 @@ const App = () => {
 }
 
 render(<App />, document.querySelector("#root"));
-executeEffect(null);
+executeEffect();
