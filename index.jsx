@@ -10,6 +10,7 @@ let React = {
     const element = { tags, props, children }
     return element;
   }
+  // create text element
 };
 
 // Mounting function. Takes virtual DOM and builds the actual DOM 

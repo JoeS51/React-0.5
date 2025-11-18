@@ -6,3 +6,10 @@ This is a functional React clone that I built from the bottom up.
 ### Steps:
 - Start server
 `python3 -m http.server 8000`
+
+
+TODO:
+- [ ] reconciliation algo
+- [ ] clean up after render
+- [ ] use ref implementation
+- [ ] update this readme
