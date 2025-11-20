@@ -2,6 +2,7 @@
 
 const TEXT_ELEMENT = "text";
 
+// Creates a virtual dom text node (helpful for reconciliation)
 const createTextElement = (text) => {
   return {
     tags: TEXT_ELEMENT,
@@ -29,10 +30,11 @@ let React = {
   }
 };
 
-// Mounting function. Takes virtual DOM and builds the actual DOM 
+// Takes virtual DOM and builds the actual DOM 
 const render = (reactElement, container) => {
 
   if (Array.isArray(reactElement)) {
+    console.log(reactElement)
     reactElement.forEach(node => render(node, container))
     return
   }
@@ -55,6 +57,10 @@ const render = (reactElement, container) => {
       , actualDomElement));
   }
   container.appendChild(actualDomElement);
+}
+
+const reconcile = () => {
+  // TODO: implement reconciliation functionality here for the render function
 }
 
 // Global States
@@ -141,7 +147,7 @@ const Test = (props) => {
   )
 }
 
-// HTML
+// Test JSX
 const App = () => {
   const [title, setTitle] = useState("WELCOME TO MY REACT LITE");
   const [counter, setCounter] = useState(0);
@@ -176,5 +182,6 @@ const App = () => {
   );
 }
 
+// Code needed to actually run my react logic
 render(<App />, document.querySelector("#root"));
 executeEffect();
