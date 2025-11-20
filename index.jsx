@@ -1,5 +1,15 @@
 // My implementation of react 
 
+const TEXT_ELEMENT = "text";
+
+const createTextElement = (text) => {
+  return {
+    tags: TEXT_ELEMENT,
+    props: { nodeValue: text },
+    children: []
+  };
+}
+
 // Virtual dom node
 let React = {
   createElement: (tags, props, ...children) => {
@@ -7,10 +17,16 @@ let React = {
       const res = { ...(props || {}), children }
       return tags(res)
     }
-    const element = { tags, props, children }
+
+    const normalizedChildren = children.map(child =>
+      typeof child === "object"
+        ? child
+        : createTextElement(child)
+    );
+
+    const element = { tags, props, children: normalizedChildren }
     return element;
   }
-  // create text element
 };
 
 // Mounting function. Takes virtual DOM and builds the actual DOM 
@@ -21,11 +37,12 @@ const render = (reactElement, container) => {
     return
   }
 
-  if (typeof reactElement == "string" || typeof reactElement == "number") {
-    const textElement = document.createTextNode(reactElement);
+  if (reactElement.tags === TEXT_ELEMENT) {
+    const textElement = document.createTextNode(reactElement.props.nodeValue);
     container.appendChild(textElement);
     return;
   }
+
   const actualDomElement = document.createElement(reactElement.tags)
   if (reactElement.props) {
     Object.keys(reactElement.props)
