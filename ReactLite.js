@@ -1,4 +1,4 @@
-// My implementation of react 
+// My implementation of React Lite
 
 const TEXT_ELEMENT = "text";
 
@@ -12,7 +12,7 @@ const createTextElement = (text) => {
 }
 
 // Virtual dom node
-let React = {
+const React = {
   createElement: (tags, props, ...children) => {
     if (typeof tags == "function") {
       const res = { ...(props || {}), children }
@@ -69,17 +69,25 @@ let idx = 0;
 const effects = [];
 const effectDeps = [];
 let effectIdx = 0;
-// const effects = [];
-// let effectIdx = 0;
 const pendingEffects = [];
 
 // Naive rerender implementation 
 // TODO: Improve this 
+let _rootComponent = null;
+let _rootContainer = null;
+
 const rerender = () => {
+  if (!_rootComponent || !_rootContainer) {
+    console.error("Root component or container not set");
+    return;
+  }
   idx = 0;
   effectIdx = 0;
-  document.querySelector("#root").firstChild.remove();
-  render(<App />, document.querySelector("#root"));
+  const firstChild = _rootContainer.firstChild;
+  if (firstChild) {
+    firstChild.remove();
+  }
+  render(_rootComponent(), _rootContainer);
   executeEffect();
 }
 
@@ -138,50 +146,23 @@ const executeEffect = () => {
   }
 }
 
-const Test = (props) => {
-  return (
-    <div>
-      <p>hi</p>
-      {props.children}
-    </div>
-  )
+// Helper function to set up the root component for rerender
+const setRootComponent = (component, container) => {
+  _rootComponent = component;
+  _rootContainer = container;
 }
 
-// Test JSX
-const App = () => {
-  const [title, setTitle] = useState("WELCOME TO MY REACT LITE");
-  const [counter, setCounter] = useState(0);
+// export as ES6
+export const createElement = React.createElement;
+export { render, useState, useEffect, setRootComponent, executeEffect };
 
-  // just runs once at the start for now
-  useEffect(() => {
-    console.log("in use effect");
-    setCounter(10000);
-  }, [])
+// Also create a default export with everything
+export default {
+  createElement: React.createElement,
+  render,
+  useState,
+  useEffect,
+  setRootComponent,
+  executeEffect
+};
 
-  useEffect(() => {
-    console.log("test")
-    setTitle("TEKLJSDKLAJKLDAS")
-  }, [counter])
-
-  return (
-    <div className="joe-test">
-      <Test>
-        <p>joe test</p>
-        <p>joe 2 test</p>
-      </Test>
-      <h1>{title}</h1>
-      <p>
-        I made this with my own react implementation
-      </p>
-      <input onchange={e => setTitle(e.target.value)} value={title} />
-      <br />
-      <button onclick={() => setCounter(counter + 1)}>Click me</button>
-      <br />
-      {counter}
-    </div>
-  );
-}
-
-// Code needed to actually run my react logic
-render(<App />, document.querySelector("#root"));
-executeEffect();
