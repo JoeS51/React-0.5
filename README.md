@@ -9,7 +9,9 @@ This is a functional React clone that I built from the bottom up.
 
 
 TODO:
+- [x] refactor react lite to allow use in other modules
 - [ ] reconciliation algo
 - [ ] clean up after render
 - [ ] use ref implementation
+- [ ] use memo (?)
 - [ ] update this readme
