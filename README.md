@@ -17,4 +17,4 @@ Future features:
 - [ ] use memo (?)
 - [ ] update this readme
 
-[Here is a link for more info]()
+TODO...
