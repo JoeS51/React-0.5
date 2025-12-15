@@ -31,7 +31,7 @@ const React = {
 };
 
 // Takes virtual DOM and builds the actual DOM 
-const render = (reactElement, container) => {
+const render = (reactElement, container, isRoot = false) => {
 
   if (Array.isArray(reactElement)) {
     console.log(reactElement)
@@ -59,8 +59,16 @@ const render = (reactElement, container) => {
   container.appendChild(actualDomElement);
 }
 
-const reconcile = () => {
-  // TODO: implement reconciliation functionality here for the render function
+// For reconciliation, there are a couple scenarios: TODO describe the steps here
+const reconcile = (prevTree, newTree, container) => {
+  // remove logs once this works
+  console.log("in reconciliation")
+  console.log(prevTree)
+  console.log(newTree)
+  // Start checking all the cases
+  if (prevTree.tags == newTree.tags) {
+
+  }
 }
 
 // Global States
@@ -75,6 +83,7 @@ const pendingEffects = [];
 // TODO: Improve this 
 let _rootComponent = null;
 let _rootContainer = null;
+let _previousTree = null // this will store the previous Virtual DOM tree
 
 const rerender = () => {
   if (!_rootComponent || !_rootContainer) {
@@ -83,11 +92,23 @@ const rerender = () => {
   }
   idx = 0;
   effectIdx = 0;
+
   const firstChild = _rootContainer.firstChild;
-  if (firstChild) {
-    firstChild.remove();
-  }
-  render(_rootComponent(), _rootContainer);
+  const newTree = _rootComponent();
+
+  reconcile(_previousTree, newTree, _rootContainer)
+
+  // if (firstChild) {
+  //   firstChild.remove();
+  // }
+  // render(_rootComponent(), _rootContainer, true);
+
+
+  // This stores the tree for reconciliation in next render
+  _previousTree = newTree;
+  console.log("Previous Tree:")
+  console.log(_previousTree)
+
   executeEffect();
 }
 
@@ -152,7 +173,6 @@ const setRootComponent = (component, container) => {
   _rootContainer = container;
 }
 
-// export as ES6
 export const createElement = React.createElement;
 export { render, useState, useEffect, setRootComponent, executeEffect };
 
