@@ -42,6 +42,7 @@ const render = (reactElement, container, isRoot = false) => {
   if (reactElement.tags === TEXT_ELEMENT) {
     const textElement = document.createTextNode(reactElement.props.nodeValue);
     container.appendChild(textElement);
+    reactElement.dom = textElement;
     return;
   }
 
@@ -57,7 +58,9 @@ const render = (reactElement, container, isRoot = false) => {
       , actualDomElement));
   }
   container.appendChild(actualDomElement);
+  reactElement.dom = actualDomElement;
 }
+
 
 // For reconciliation, there are a couple scenarios: TODO describe the steps here
 const reconcile = (prevTree, newTree, container) => {
@@ -65,8 +68,22 @@ const reconcile = (prevTree, newTree, container) => {
   console.log("in reconciliation")
   console.log(prevTree)
   console.log(newTree)
-  // Start checking all the cases
-  if (prevTree.tags == newTree.tags) {
+  // Check if there was no change
+  if ((prevTree && newTree) && (prevTree.tags == newTree.tags)) {
+    if (prevTree.tags == TEXT_ELEMENT && prevTree.props.nodeValue != newTree.props.nodeValue) {
+      console.log("comparing text node")
+    }
+    // check children iteratively
+    const prevChildren = prevTree.children || []
+    const newChildren = newTree.children || []
+    for (let i = 0; i < Math.max(prevChildren.length, newChildren.length); i++) {
+      reconcile(prevChildren[i], newChildren[i], prevTree.dom)
+    }
+  } else if (!prevTree && newTree) { // new virtual node 
+    container.textContent = "";
+    render(newTree, container);
+    return;
+  } else if (!newTree && prevTree) { // deleted virtual node
 
   }
 }
@@ -84,14 +101,19 @@ const pendingEffects = [];
 let _rootComponent = null;
 let _rootContainer = null;
 let _previousTree = null // this will store the previous Virtual DOM tree
+let _isRendering = false; // needed this for a weird bug maybe can remove
 
 const rerender = () => {
+  if (_isRendering) {
+    return;
+  }
   if (!_rootComponent || !_rootContainer) {
     console.error("Root component or container not set");
     return;
   }
   idx = 0;
   effectIdx = 0;
+  _isRendering = true;
 
   const firstChild = _rootContainer.firstChild;
   const newTree = _rootComponent();
@@ -108,7 +130,7 @@ const rerender = () => {
   _previousTree = newTree;
   console.log("Previous Tree:")
   console.log(_previousTree)
-
+  _isRendering = false;
   executeEffect();
 }
 
@@ -171,6 +193,7 @@ const executeEffect = () => {
 const setRootComponent = (component, container) => {
   _rootComponent = component;
   _rootContainer = container;
+  rerender();
 }
 
 export const createElement = React.createElement;

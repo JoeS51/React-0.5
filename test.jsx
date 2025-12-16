@@ -13,9 +13,9 @@ const TestComponent = () => {
         <div>
             <h1>{message}</h1>
             <p>teste testestet</p>
-            <input 
-                onchange={(e) => setMessage(e.target.value)} 
-                value={message} 
+            <input
+                onchange={(e) => setMessage(e.target.value)}
+                value={message}
                 placeholder="type something..."
             />
             <br />
@@ -28,5 +28,4 @@ const TestComponent = () => {
 }
 
 ReactLite.setRootComponent(TestComponent, document.querySelector("#root"));
-ReactLite.render(<TestComponent />, document.querySelector("#root"));
-ReactLite.executeEffect();
+// ReactLite.render(<TestComponent />, document.querySelector("#root"));
