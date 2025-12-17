@@ -31,7 +31,7 @@ const React = {
 };
 
 // Takes virtual DOM and builds the actual DOM 
-const render = (reactElement, container, isRoot = false) => {
+const render = (reactElement, container, isRoot = false, appendBefore = null) => {
 
   if (Array.isArray(reactElement)) {
     console.log(reactElement)
@@ -41,8 +41,8 @@ const render = (reactElement, container, isRoot = false) => {
 
   if (reactElement.tags === TEXT_ELEMENT) {
     const textElement = document.createTextNode(reactElement.props.nodeValue);
-    container.appendChild(textElement);
     reactElement.dom = textElement;
+    container.insertBefore(textElement, appendBefore);
     return;
   }
 
@@ -57,35 +57,54 @@ const render = (reactElement, container, isRoot = false) => {
     reactElement.children.forEach(child => render(child
       , actualDomElement));
   }
-  container.appendChild(actualDomElement);
+  container.insertBefore(actualDomElement, appendBefore);
   reactElement.dom = actualDomElement;
 }
 
 
 // For reconciliation, there are a couple scenarios: TODO describe the steps here
-const reconcile = (prevTree, newTree, container) => {
+const reconcile = (prevTree, newTree, container, beforeDom = null) => {
   // remove logs once this works
   console.log("in reconciliation")
   console.log(prevTree)
   console.log(newTree)
-  // Check if there was no change
-  if ((prevTree && newTree) && (prevTree.tags == newTree.tags)) {
-    if (prevTree.tags == TEXT_ELEMENT && prevTree.props.nodeValue != newTree.props.nodeValue) {
-      console.log("comparing text node")
-    }
-    // check children iteratively
-    const prevChildren = prevTree.children || []
-    const newChildren = newTree.children || []
-    for (let i = 0; i < Math.max(prevChildren.length, newChildren.length); i++) {
-      reconcile(prevChildren[i], newChildren[i], prevTree.dom)
-    }
-  } else if (!prevTree && newTree) { // new virtual node 
-    container.textContent = "";
-    render(newTree, container);
-    return;
-  } else if (!newTree && prevTree) { // deleted virtual node
 
+  // Scenario where virtual dom was created 
+  if (!prevTree && newTree) {
+    render(newTree, container, beforeDom);
+    return;
   }
+
+  // Scenario where virtual dom was deleted (delete from dom)
+  if (prevTree && !newTree) {
+    container.removeChild(prevTree.dom);
+    return;
+  }
+
+  // Tag was changed (swap v nodes in-place)
+  if (prevTree.tags !== newTree.tags) {
+    render(newTree, container, prevTree.dom)
+    container.removeChild(prevTree.dom);
+    return;
+  }
+
+  // Checking if these virtual nodes are text elements
+  if (newTree.tags == TEXT_ELEMENT) {
+    if (prevTree.props.nodeValue != newTree.props.nodeValue) {
+      prevTree.dom.nodeValue = newTree.props.nodeValue;
+    }
+    return;
+  }
+
+  const prevChildren = prevTree.children || [];
+  const newChildren = newTree.children || [];
+  const maxLen = Math.max(prevChildren.length, newChildren.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    const before = newTree.dom.childNodes[i] || null;
+    reconcile(prevChildren[i], newChildren[i], prevTree.dom, before)
+  }
+
 }
 
 // Global States
