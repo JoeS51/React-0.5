@@ -90,21 +90,48 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
 
   // Checking if these virtual nodes are text elements
   if (newTree.tags == TEXT_ELEMENT) {
+    console.log("comparing text element")
+    console.log(newTree)
+    console.log(prevTree)
     if (prevTree.props.nodeValue != newTree.props.nodeValue) {
       prevTree.dom.nodeValue = newTree.props.nodeValue;
+      newTree.dom = prevTree.dom;
     }
     return;
   }
+
+  newTree.dom = prevTree.dom;
+  updateDomProps(newTree.dom, prevTree.props, newTree.props);
 
   const prevChildren = prevTree.children || [];
   const newChildren = newTree.children || [];
   const maxLen = Math.max(prevChildren.length, newChildren.length);
 
   for (let i = 0; i < maxLen; i++) {
-    const before = newTree.dom.childNodes[i] || null;
+    const before = prevTree.dom?.childNodes[i] || null;
     reconcile(prevChildren[i], newChildren[i], prevTree.dom, before)
   }
 
+}
+
+const updateDomProps = (dom, prevProps = {}, newProps = {}) => {
+  if (prevProps) {
+    for (const key of Object.keys(prevProps)) {
+      if (key === "children") continue;
+      if (!(key in newProps)) {
+        dom[key] = "";
+      }
+    }
+  }
+
+  if (newProps) {
+    for (const key of Object.keys(newProps)) {
+      if (key === "children") continue;
+      if (prevProps[key] !== newProps[key]) {
+        dom[key] = newProps[key];
+      }
+    }
+  }
 }
 
 // Global States
@@ -123,20 +150,17 @@ let _previousTree = null // this will store the previous Virtual DOM tree
 let _isRendering = false; // needed this for a weird bug maybe can remove
 
 const rerender = () => {
-  if (_isRendering) {
-    return;
-  }
   if (!_rootComponent || !_rootContainer) {
     console.error("Root component or container not set");
     return;
   }
   idx = 0;
   effectIdx = 0;
-  _isRendering = true;
 
   const firstChild = _rootContainer.firstChild;
   const newTree = _rootComponent();
-
+  console.log("before reconciliation")
+  console.log(states);
   reconcile(_previousTree, newTree, _rootContainer)
 
   // if (firstChild) {
@@ -147,9 +171,8 @@ const rerender = () => {
 
   // This stores the tree for reconciliation in next render
   _previousTree = newTree;
-  console.log("Previous Tree:")
-  console.log(_previousTree)
-  _isRendering = false;
+  console.log("after reconciliation")
+  console.log(states);
   executeEffect();
 }
 
@@ -160,10 +183,16 @@ const useState = (initialState) => {
   }
 
   let setState = (newState) => {
+    console.log(states)
     states[frozen] = newState;
+    console.log("in set state")
+    console.log(states)
+    console.log(newState)
     rerender();
   }
   idx++;
+  console.log("in use state")
+  console.log(states)
   return [states[frozen], setState]
 }
 
@@ -206,6 +235,8 @@ const executeEffect = () => {
   for (const fn of effectsToRun) {
     fn()
   }
+  console.log("in execute effect")
+  console.log(states)
 }
 
 // Helper function to set up the root component for rerender

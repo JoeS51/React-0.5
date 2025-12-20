@@ -20,7 +20,7 @@ const TestComponent = () => {
             />
             <br />
             <br />
-            <button onclick={() => setCount(count + 1)}>
+            <button onclick={() => setCount(count + 5)}>
                 Count: {count}
             </button>
         </div>
