@@ -141,6 +141,7 @@ const effects = [];
 const effectDeps = [];
 let effectIdx = 0;
 const pendingEffects = [];
+const cleanupEffects = [];
 
 // Naive rerender implementation 
 // TODO: Improve this 
@@ -199,7 +200,6 @@ const useState = (initialState) => {
 const useEffect = (userFunc, deps) => {
   const currIdx = effectIdx;
   const prevDeps = effectDeps[currIdx];
-
   let addToPending = false;
 
   if (prevDeps === undefined) {
@@ -220,7 +220,18 @@ const useEffect = (userFunc, deps) => {
   }
 
   if (addToPending) {
-    pendingEffects.push(userFunc);
+    if (cleanupEffects[currIdx]) {
+      cleanupEffects[currIdx]();
+    }
+    // adding cleanup function too if it exists
+    pendingEffects.push(() => {
+      const cleanupFunc = userFunc();
+      if (typeof cleanupFunc === "function") {
+        cleanupEffects[currIdx] = cleanup;
+      } else {
+        cleanupEffects[currIdx] = null;
+      }
+    })
   }
 
   effects[currIdx] = userFunc;

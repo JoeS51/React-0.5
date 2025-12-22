@@ -7,6 +7,7 @@ const TestComponent = () => {
 
     ReactLite.useEffect(() => {
         console.log("Test component mounted");
+        return () => console.log("clean up function");
     }, []);
 
     return (
