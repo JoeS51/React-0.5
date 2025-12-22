@@ -65,9 +65,9 @@ const render = (reactElement, container, isRoot = false, appendBefore = null) =>
 // For reconciliation, there are a couple scenarios: TODO describe the steps here
 const reconcile = (prevTree, newTree, container, beforeDom = null) => {
   // remove logs once this works
-  console.log("in reconciliation")
-  console.log(prevTree)
-  console.log(newTree)
+  // console.log("in reconciliation")
+  // console.log(prevTree)
+  // console.log(newTree)
 
   // Scenario where virtual dom was created 
   if (!prevTree && newTree) {
@@ -90,9 +90,6 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
 
   // Checking if these virtual nodes are text elements
   if (newTree.tags == TEXT_ELEMENT) {
-    console.log("comparing text element")
-    console.log(newTree)
-    console.log(prevTree)
     if (prevTree.props.nodeValue != newTree.props.nodeValue) {
       prevTree.dom.nodeValue = newTree.props.nodeValue;
       newTree.dom = prevTree.dom;
@@ -221,13 +218,14 @@ const useEffect = (userFunc, deps) => {
 
   if (addToPending) {
     if (cleanupEffects[currIdx]) {
+      console.log("cleaning up in use effect")
       cleanupEffects[currIdx]();
     }
     // adding cleanup function too if it exists
     pendingEffects.push(() => {
       const cleanupFunc = userFunc();
       if (typeof cleanupFunc === "function") {
-        cleanupEffects[currIdx] = cleanup;
+        cleanupEffects[currIdx] = cleanupFunc;
       } else {
         cleanupEffects[currIdx] = null;
       }

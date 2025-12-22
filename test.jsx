@@ -6,9 +6,9 @@ const TestComponent = () => {
     const [count, setCount] = ReactLite.useState(0);
 
     ReactLite.useEffect(() => {
-        console.log("Test component mounted");
+        console.log("count increased ${count}");
         return () => console.log("clean up function");
-    }, []);
+    }, [count]);
 
     return (
         <div>
