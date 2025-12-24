@@ -154,6 +154,7 @@ const rerender = () => {
   }
   idx = 0;
   effectIdx = 0;
+  refIdx = 0;
 
   const firstChild = _rootContainer.firstChild;
   const newTree = _rootComponent();
@@ -238,17 +239,21 @@ const useEffect = (userFunc, deps) => {
   effectIdx++;
 }
 
+const refs = [];
+let refIdx = 0;
 let currRef;
 
 const useRef = (state) => {
-  if (currRef) {
-    return currRef;
+  if (refIdx >= refs.length) {
+    let newRef = {
+      current: state,
+    }
+    refs.push(newRef)
   }
-  const result = {
-    current: state,
-  }
-  currRef = result;
-  return currRef;
+
+  let resRef = refs[refIdx];
+  refIdx += 1;
+  return resRef;
 }
 
 const executeEffect = () => {
