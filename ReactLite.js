@@ -238,6 +238,19 @@ const useEffect = (userFunc, deps) => {
   effectIdx++;
 }
 
+let currRef;
+
+const useRef = (state) => {
+  if (currRef) {
+    return currRef;
+  }
+  const result = {
+    current: state,
+  }
+  currRef = result;
+  return currRef;
+}
+
 const executeEffect = () => {
   const effectsToRun = pendingEffects.slice();
   pendingEffects.length = 0;
@@ -264,6 +277,7 @@ export default {
   render,
   useState,
   useEffect,
+  useRef,
   setRootComponent,
   executeEffect
 };

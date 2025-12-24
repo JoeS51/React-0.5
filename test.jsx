@@ -4,6 +4,7 @@ import ReactLite from './ReactLite.js';
 const TestComponent = () => {
     const [message, setMessage] = ReactLite.useState("test component");
     const [count, setCount] = ReactLite.useState(0);
+    const testRef = ReactLite.useRef(0);
 
     ReactLite.useEffect(() => {
         console.log("count increased ${count}");
@@ -21,6 +22,9 @@ const TestComponent = () => {
             />
             <br />
             <br />
+            <button onclick={() => {console.log("clicked ref button"); testRef.current = 5}}>
+                Test Ref: {testRef.current}
+            </button>
             <button onclick={() => setCount(count + 5)}>
                 Count: {count}
             </button>
