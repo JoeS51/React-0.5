@@ -28,6 +28,10 @@ const TestComponent = () => {
             <button onclick={() => setCount(count + 5)}>
                 Count: {count}
             </button>
+            <br/>
+            <br/>
+            <button onclick={() => {testRef.current.focus()}}>Test Ref</button>
+            <input ref={testRef}/>
         </div>
     );
 }

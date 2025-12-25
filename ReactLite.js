@@ -49,8 +49,15 @@ const render = (reactElement, container, isRoot = false, appendBefore = null) =>
   const actualDomElement = document.createElement(reactElement.tags)
   if (reactElement.props) {
     Object.keys(reactElement.props)
-      .filter(p => p != "children")
+      .filter(p => (p != "children" && p != "ref"))
       .forEach(p => (actualDomElement[p] = reactElement.props[p]));
+
+    // Set useRef
+    if (reactElement.props.ref) {
+      reactElement.props.ref.current = actualDomElement;
+      console.log("use ref")
+      console.log(reactElement.props.ref.current)
+    }
   }
 
   if (reactElement.children) {
