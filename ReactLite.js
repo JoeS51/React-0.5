@@ -97,9 +97,9 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
 
   // Checking if these virtual nodes are text elements
   if (newTree.tags == TEXT_ELEMENT) {
+    newTree.dom = prevTree.dom;
     if (prevTree.props.nodeValue != newTree.props.nodeValue) {
       prevTree.dom.nodeValue = newTree.props.nodeValue;
-      newTree.dom = prevTree.dom;
     }
     return;
   }
