@@ -189,11 +189,11 @@ const useState = (initialState) => {
   }
 
   let setState = (newState) => {
-    console.log(states)
-    states[frozen] = newState;
-    console.log("in set state")
-    console.log(states)
-    console.log(newState)
+    if (typeof newState === 'function') {
+      states[frozen] = newState(states[frozen])
+    } else {
+      states[frozen] = newState;
+    }
     rerender();
   }
   idx++;
