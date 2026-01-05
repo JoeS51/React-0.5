@@ -146,6 +146,9 @@ const effectDeps = [];
 let effectIdx = 0;
 const pendingEffects = [];
 const cleanupEffects = [];
+const refs = [];
+let refIdx = 0;
+let currRef;
 
 // Naive rerender implementation 
 // TODO: Improve this 
@@ -162,6 +165,7 @@ const rerender = () => {
   idx = 0;
   effectIdx = 0;
   refIdx = 0;
+  memoIdx = 0;
 
   const firstChild = _rootContainer.firstChild;
   const newTree = _rootComponent();
@@ -246,10 +250,6 @@ const useEffect = (userFunc, deps) => {
   effectIdx++;
 }
 
-const refs = [];
-let refIdx = 0;
-let currRef;
-
 const useRef = (state) => {
   if (refIdx >= refs.length) {
     let newRef = {
@@ -261,6 +261,40 @@ const useRef = (state) => {
   let resRef = refs[refIdx];
   refIdx += 1;
   return resRef;
+}
+
+const memos = [];
+let memoIdx = 0;
+
+const useMemo = (func, deps) => {
+  const currIdx = memoIdx;
+  const prevDeps = memos[currIdx]?.deps;
+  let shouldRecompute = false;
+
+  // Can copy logic from useEffect (TODO: use helper functio here?)
+  if (prevDeps === undefined) {
+    shouldRecompute = true;
+  } else if (!deps) {
+    shouldRecompute = true;
+  } else {
+    if (prevDeps.length !== deps.length) {
+      shouldRecompute = true;
+    } else {
+      for (let i = 0; i < deps.length; i++) {
+        if (prevDeps[i] !== deps[i]) {
+          shouldRecompute = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if (shouldRecompute) {
+    memos[currIdx] = { value: func(), deps }
+  }
+
+  memoIdx++;
+  return memos[currIdx].value;
 }
 
 const executeEffect = () => {
@@ -290,6 +324,7 @@ export default {
   useState,
   useEffect,
   useRef,
+  useMemo,
   setRootComponent,
   executeEffect
 };
