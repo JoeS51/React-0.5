@@ -1,4 +1,4 @@
-// My implementation of React Lite
+// My implementation of React based on various aritcles
 
 const TEXT_ELEMENT = "text";
 
@@ -297,6 +297,10 @@ const useMemo = (func, deps) => {
   return memos[currIdx].value;
 }
 
+const useCallback = (func, deps) => {
+  useMemo(() => func, deps);
+}
+
 const executeEffect = () => {
   const effectsToRun = pendingEffects.slice();
   pendingEffects.length = 0;
@@ -325,6 +329,7 @@ export default {
   useEffect,
   useRef,
   useMemo,
+  useCallback,
   setRootComponent,
   executeEffect
 };
