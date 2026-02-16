@@ -271,7 +271,7 @@ const useMemo = (func, deps) => {
   const prevDeps = memos[currIdx]?.deps;
   let shouldRecompute = false;
 
-  // Can copy logic from useEffect (TODO: use helper functio here?)
+  // Can copy logic from useEffect (TODO: use helper function here?)
   if (prevDeps === undefined) {
     shouldRecompute = true;
   } else if (!deps) {
@@ -298,7 +298,23 @@ const useMemo = (func, deps) => {
 }
 
 const useCallback = (func, deps) => {
-  useMemo(() => func, deps);
+  return useMemo(() => func, deps);
+}
+
+const useReducer = (reducer, initialArg, init) => {
+  const frozen = idx;
+  if (frozen >= states.length) {
+    const derivedInitState = init ? init(initialArg) : initialArg;
+    states.push(derivedInitState);
+  }
+
+  let dispatch = (args) => {
+    states[frozen] = reducer(states[frozen], args);
+    rerender();
+  }
+
+  idx++;
+  return [states[frozen], dispatch]
 }
 
 const executeEffect = () => {
@@ -319,7 +335,7 @@ const setRootComponent = (component, container) => {
 }
 
 export const createElement = React.createElement;
-export { render, useState, useEffect, setRootComponent, executeEffect };
+export { render, useState, useEffect, useRef, useMemo, useCallback, useReducer, setRootComponent, executeEffect };
 
 // Also create a default export with everything
 export default {
@@ -330,6 +346,7 @@ export default {
   useRef,
   useMemo,
   useCallback,
+  useReducer,
   setRootComponent,
   executeEffect
 };
