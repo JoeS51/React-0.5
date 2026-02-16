@@ -61,6 +61,8 @@ const render = (reactElement, container, isRoot = false, appendBefore = null) =>
   }
 
   if (reactElement.children) {
+    console.log("HERERE")
+    console.log(reactElement.children)
     reactElement.children.forEach(child => render(child
       , actualDomElement));
   }
@@ -303,10 +305,16 @@ const useCallback = (func, deps) => {
 
 const useReducer = (reducer, initialArg, init) => {
   const frozen = idx;
+  console.log(frozen)
+  console.log(states)
   if (frozen >= states.length) {
+    console.log("in fornzen")
     const derivedInitState = init ? init(initialArg) : initialArg;
     states.push(derivedInitState);
   }
+
+  console.log(frozen)
+  console.log("donnne")
 
   let dispatch = (args) => {
     states[frozen] = reducer(states[frozen], args);
@@ -314,6 +322,8 @@ const useReducer = (reducer, initialArg, init) => {
   }
 
   idx++;
+  console.log("in use reudcer")
+  console.log(states)
   return [states[frozen], dispatch]
 }
 

@@ -12,8 +12,12 @@ const expensiveCalculation = (num) => {
 
 const reducer = (state, action) => {
   switch (action) {
+    case 'increment':
+      return state + 1;
+    case 'decrement':
+      return state - 1;
     default:
-      return state;
+      return 0
   }
 }
 
@@ -24,7 +28,7 @@ const TestComponent = () => {
     return expensiveCalculation(count);
   }, [count]);
   const testRef = ReactLite.useRef(0);
-  const [reducerState, dispatch] = ReactLite.useReducer(reducer, 0);
+  const [reducerState, dispatch] = ReactLite.useReducer(reducer, 6);
 
 
   ReactLite.useEffect(() => {
@@ -45,7 +49,7 @@ const TestComponent = () => {
       <br />
       <br />
       <button onclick={() => { console.log("clicked ref button"); testRef.current = 5 }}>
-        Test Ref: {testRef.current}
+        Test Ref: {testRef.current ? "yes" : "no"}
       </button>
       <button onclick={() => setCount(count + 5)}>
         Count: {count}
@@ -55,9 +59,9 @@ const TestComponent = () => {
       <button onclick={() => { testRef.current.focus() }}>Test Ref</button>
       <input ref={testRef} />
 
-      <p>test useReducer</p>
-      <button onclick={() => dispatch('test')}>increment</button>
-      <button onclick={() => dispatch('test2')}>decrement</button>
+      <p>Simple useReducer test example</p>
+      <button onclick={() => dispatch('increment')}>increment</button>
+      <button onclick={() => dispatch('decrement')}>decrement</button>
       <p>{reducerState}</p>
 
     </div>
