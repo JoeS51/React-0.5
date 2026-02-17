@@ -34,7 +34,6 @@ const React = {
 const render = (reactElement, container, isRoot = false, appendBefore = null) => {
 
   if (Array.isArray(reactElement)) {
-    console.log(reactElement)
     reactElement.forEach(node => render(node, container))
     return
   }
@@ -61,10 +60,7 @@ const render = (reactElement, container, isRoot = false, appendBefore = null) =>
   }
 
   if (reactElement.children) {
-    console.log("HERERE")
-    console.log(reactElement.children)
-    reactElement.children.forEach(child => render(child
-      , actualDomElement));
+    reactElement.children.forEach(child => render(child, actualDomElement));
   }
   container.insertBefore(actualDomElement, appendBefore);
   reactElement.dom = actualDomElement;
@@ -78,9 +74,9 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
   // console.log(prevTree)
   // console.log(newTree)
 
-  // Scenario where virtual dom was created 
+  // Scenario where virtual dom was created
   if (!prevTree && newTree) {
-    render(newTree, container, beforeDom);
+    render(newTree, container, false, beforeDom);
     return;
   }
 
@@ -116,17 +112,31 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
   // Detect if we need to do key-based reconciliation
   if (hasKeyProp(prevChildren) || hasKeyProp(newChildren)) {
     const [prevChildrenNonKeyed, prevChildrenKeyed] = getKeyedChildren(prevChildren);
+    let nonKeyIdx = 0;
     for (let newChildIdx = 0; newChildIdx < newChildren.length; newChildIdx++) {
       const newChild = newChildren[newChildIdx];
       const newChildKey = newChild.props.key;
       // First case: the new child is not keyed
       if (!newChildKey) {
+        const before = prevTree.dom?.childNodes[newChildIdx] || null;
+        const prevChild = nonKeyIdx < prevChildrenNonKeyed.length ? prevChildrenNonKeyed[nonKeyIdx] : null;
+        if (prevChild) {
+          reconcile(prevChild, newChild, prevTree.dom, before);
+        } else {
+          render(newChild, prevTree.dom, false, before);
+        }
 
+        if (newChild.dom && newChild.dom !== before) {
+          prevTree.dom.insertBefore(newChild.dom, before);
+        }
+
+        nonKeyIdx++;
       } else if (newChildKey && !prevChildrenKeyed[newChildKey]) { // old list didn't contain this key
-
+        const before = prevTree.dom?.childNodes[newChildIdx] || null;
+        render(newChild, prevTree.dom, false, before);
       } else if (newChildKey && prevChildrenKeyed[newChildKey]) { // old childrens did contain this key
         const before = prevTree.dom?.childNodes[newChildIdx] || null;
-        reconcile(prevChildren[newChildKey], newChild, prevTree.dom, before);
+        reconcile(prevChildrenKeyed[newChildKey], newChild, prevTree.dom, before);
 
         if (newChild.dom && newChild.dom !== before) {
           prevTree.dom.insertBefore(newChild.dom, before);
@@ -135,6 +145,22 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
         delete prevChildrenKeyed[newChildKey];
       } else {
         console.log("this case shouldn't happen")
+      }
+    }
+
+    // Remove remaining old keyed children
+    for (const key in prevChildrenKeyed) {
+      const oldChild = prevChildrenKeyed[key];
+      if (oldChild.dom && oldChild.dom.parentNode) {
+        oldChild.dom.parentNode.removeChild(oldChild.dom);
+      }
+    }
+
+    // Remove remaining old non-keyed children
+    for (let i = nonKeyIdx; i < prevChildrenNonKeyed.length; i++) {
+      const oldChild = prevChildrenNonKeyed[i];
+      if (oldChild.dom && oldChild.dom.parentNode) {
+        oldChild.dom.parentNode.removeChild(oldChild.dom);
       }
     }
   } else {
