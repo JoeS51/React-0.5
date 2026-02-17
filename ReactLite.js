@@ -113,11 +113,58 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
   const newChildren = newTree.children || [];
   const maxLen = Math.max(prevChildren.length, newChildren.length);
 
-  for (let i = 0; i < maxLen; i++) {
-    const before = prevTree.dom?.childNodes[i] || null;
-    reconcile(prevChildren[i], newChildren[i], prevTree.dom, before)
-  }
+  // Detect if we need to do key-based reconciliation
+  if (hasKeyProp(prevChildren) || hasKeyProp(newChildren)) {
+    const [prevChildrenNonKeyed, prevChildrenKeyed] = getKeyedChildren(prevChildren);
+    for (let newChildIdx = 0; newChildIdx < newChildren.length; newChildIdx++) {
+      const newChild = newChildren[newChildIdx];
+      const newChildKey = newChild.props.key;
+      // First case: the new child is not keyed
+      if (!newChildKey) {
 
+      } else if (newChildKey && !prevChildrenKeyed[newChildKey]) { // old list didn't contain this key
+
+      } else if (newChildKey && prevChildrenKeyed[newChildKey]) { // old childrens did contain this key
+        const before = prevTree.dom?.childNodes[newChildIdx] || null;
+        reconcile(prevChildren[newChildKey], newChild, prevTree.dom, before);
+
+        if (newChild.dom && newChild.dom !== before) {
+          prevTree.dom.insertBefore(newChild.dom, before);
+        }
+
+        delete prevChildrenKeyed[newChildKey];
+      } else {
+        console.log("this case shouldn't happen")
+      }
+    }
+  } else {
+    for (let i = 0; i < maxLen; i++) {
+      const before = prevTree.dom?.childNodes[i] || null;
+      reconcile(prevChildren[i], newChildren[i], prevTree.dom, before)
+    }
+  }
+}
+
+const hasKeyProp = (arr) => {
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i].props.key) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const getKeyedChildren = (children) => {
+  const keyedChildren = {};
+  const nonKeyedChildren = [];
+  for (let i = 0; i < children.length; i++) {
+    if (children[i].props.key) {
+      keyedChildren[children[i].props.key] = children[i];
+    } else {
+      nonKeyedChildren.push(children[i]);
+    }
+  }
+  return [nonKeyedChildren, keyedChildren];
 }
 
 const updateDomProps = (dom, prevProps = {}, newProps = {}) => {
