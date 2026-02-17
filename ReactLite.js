@@ -1,4 +1,4 @@
-// My implementation of React based on various aritcles
+// My implementation of React 
 
 const TEXT_ELEMENT = "text";
 
@@ -222,8 +222,12 @@ const states = [];
 let idx = 0;
 const effects = [];
 const effectDeps = [];
+const layoutEffects = [];
+const layoutEffectDeps = [];
 let effectIdx = 0;
+let layoutEffectIdx = 0;
 const pendingEffects = [];
+const pendingLayoutEffects = [];
 const cleanupEffects = [];
 const refs = [];
 let refIdx = 0;
@@ -258,6 +262,7 @@ const rerender = () => {
   // render(_rootComponent(), _rootContainer, true);
 
 
+  executeLayoutEffect();
   // This stores the tree for reconciliation in next render
   _previousTree = newTree;
   console.log("after reconciliation")
@@ -404,14 +409,56 @@ const useReducer = (reducer, initialArg, init) => {
   return [states[frozen], dispatch]
 }
 
+const useLayoutEffect = (userFunc, deps) => {
+  const currIdx = layoutEffectIdx;
+  const prevDeps = layoutEffectDeps[currIdx];
+  let addToPending = false;
+
+  if (prevDeps === undefined) {
+    addToPending = true;
+  } else if (!deps) {
+    addToPending = true;
+  } else {
+    if (prevDeps.length !== deps.length) {
+      addToPending = true;
+    } else {
+      for (let i = 0; i < deps.length; i++) {
+        if (prevDeps[i] !== deps[i]) {
+          addToPending = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if (addToPending) {
+    pendingLayoutEffects.push(userFunc);
+  }
+
+  layoutEffects[currIdx] = userFunc;
+  layoutEffectDeps[currIdx] = deps;
+  layoutEffectIdx++;
+}
+
+const executeLayoutEffect = () => {
+  layoutEffectIdx = 0;
+  const effectsToRun = pendingLayoutEffects.slice();
+  pendingLayoutEffects.length = 0;
+  for (const fn of effectsToRun) {
+    fn();
+  }
+}
+
 const executeEffect = () => {
   const effectsToRun = pendingEffects.slice();
   pendingEffects.length = 0;
-  for (const fn of effectsToRun) {
-    fn()
-  }
-  console.log("in execute effect")
-  console.log(states)
+
+  // Defer effect execution until after browser paint.
+  queueMicrotask(() => {
+    for (const fn of effectsToRun) {
+      fn()
+    }
+  });
 }
 
 // Helper function to set up the root component for rerender
