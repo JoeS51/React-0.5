@@ -134,6 +134,10 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
       } else if (newChildKey && !prevChildrenKeyed[newChildKey]) { // old list didn't contain this key
         const before = prevTree.dom?.childNodes[newChildIdx] || null;
         render(newChild, prevTree.dom, false, before);
+
+        if (newChild.dom && newChild.dom !== before) {
+          prevTree.dom.insertBefore(newChild.dom, before);
+        }
       } else if (newChildKey && prevChildrenKeyed[newChildKey]) { // old childrens did contain this key
         const before = prevTree.dom?.childNodes[newChildIdx] || null;
         reconcile(prevChildrenKeyed[newChildKey], newChild, prevTree.dom, before);
