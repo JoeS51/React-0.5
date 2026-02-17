@@ -11,15 +11,34 @@ const createTextElement = (text) => {
   };
 }
 
+const flattenChildren = (children) => {
+  const flattened = [];
+  for (let i = 0; i < children.length; i++) {
+    const child = children[i];
+    if (Array.isArray(child)) {
+      flattened.push(...child);
+    } else if (child === null || child === undefined || child === false || child === true) {
+      continue;
+    } else {
+      flattened.push(child);
+    }
+  }
+  return flattened;
+}
+
 // Virtual dom node
 const React = {
   createElement: (tags, props, ...children) => {
     if (typeof tags == "function") {
       const res = { ...(props || {}), children }
-      return tags(res)
+      const element = tags(res)
+      if (props && props.key != null && element && !Array.isArray(element)) {
+        element.props = { ...(element.props || {}), key: props.key }
+      }
+      return element
     }
 
-    const normalizedChildren = children.map(child =>
+    const normalizedChildren = flattenChildren(children).map(child =>
       typeof child === "object"
         ? child
         : createTextElement(child)
@@ -46,10 +65,10 @@ const render = (reactElement, container, isRoot = false, appendBefore = null) =>
   }
 
   const actualDomElement = document.createElement(reactElement.tags)
-  if (reactElement.props) {
-    Object.keys(reactElement.props)
-      .filter(p => (p != "children" && p != "ref"))
-      .forEach(p => (actualDomElement[p] = reactElement.props[p]));
+    if (reactElement.props) {
+      Object.keys(reactElement.props)
+        .filter(p => (p != "children" && p != "ref" && p != "key"))
+        .forEach(p => (actualDomElement[p] = reactElement.props[p]));
 
     // Set useRef
     if (reactElement.props.ref) {
@@ -111,6 +130,7 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
 
   // Detect if we need to do key-based reconciliation
   if (hasKeyProp(prevChildren) || hasKeyProp(newChildren)) {
+    console.log("HAS KEY PROP")
     const [prevChildrenNonKeyed, prevChildrenKeyed] = getKeyedChildren(prevChildren);
     let nonKeyIdx = 0;
     for (let newChildIdx = 0; newChildIdx < newChildren.length; newChildIdx++) {
@@ -177,7 +197,8 @@ const reconcile = (prevTree, newTree, container, beforeDom = null) => {
 
 const hasKeyProp = (arr) => {
   for (let i = 0; i < arr.length; i++) {
-    if (arr[i].props.key) {
+    const node = arr[i];
+    if (node && node.props && node.props.key) {
       return true;
     }
   }
@@ -188,10 +209,14 @@ const getKeyedChildren = (children) => {
   const keyedChildren = {};
   const nonKeyedChildren = [];
   for (let i = 0; i < children.length; i++) {
-    if (children[i].props.key) {
-      keyedChildren[children[i].props.key] = children[i];
+    const child = children[i];
+    if (!child || !child.props) {
+      continue;
+    }
+    if (child.props.key) {
+      keyedChildren[child.props.key] = child;
     } else {
-      nonKeyedChildren.push(children[i]);
+      nonKeyedChildren.push(child);
     }
   }
   return [nonKeyedChildren, keyedChildren];
@@ -200,7 +225,7 @@ const getKeyedChildren = (children) => {
 const updateDomProps = (dom, prevProps = {}, newProps = {}) => {
   if (prevProps) {
     for (const key of Object.keys(prevProps)) {
-      if (key === "children") continue;
+      if (key === "children" || key === "key") continue;
       if (!(key in newProps)) {
         dom[key] = "";
       }
@@ -209,7 +234,7 @@ const updateDomProps = (dom, prevProps = {}, newProps = {}) => {
 
   if (newProps) {
     for (const key of Object.keys(newProps)) {
-      if (key === "children") continue;
+      if (key === "children" || key === "key") continue;
       if (prevProps[key] !== newProps[key]) {
         dom[key] = newProps[key];
       }
@@ -484,4 +509,3 @@ export default {
   setRootComponent,
   executeEffect
 };
-
